@@ -1,4 +1,4 @@
-# Dalloc - Dxrie's Memory Allocator
+# Dalloc - Dxrie's (Trash) Memory Allocator
 
 A custom, arena-based memory allocator written in C. It serves as a fun and educational project to understand memory management, heap internals, and dynamic memory allocation. Is it faster than malloc? Definitely not. Is it safer? Definitely not. But it implements the fundamental concepts of dynamic memory management.
 
