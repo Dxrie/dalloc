@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 typedef struct heapchunk_t heapchunk_t;
+typedef struct arena_t arena_t;
 
 struct heapchunk_t {
   size_t size;
@@ -12,8 +13,11 @@ struct heapchunk_t {
   heapchunk_t *next;
 };
 
-typedef struct heaparena_t {
+struct arena_t {
+  void *memory;
+  size_t size;
   heapchunk_t *head;
-} heaparena_t;
+  arena_t *next;
+};
 
 #endif
