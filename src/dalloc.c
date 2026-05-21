@@ -141,3 +141,27 @@ void *dalloc_malloc(size_t size) {
   new_chunk->flag = 1;
   return (void *)(new_chunk + 1);
 }
+
+void dalloc_free(void *ptr) {
+  if (!ptr) {
+    return;
+  }
+
+  heapchunk_t *chunk = (heapchunk_t *)ptr - 1;
+
+  if (chunk->flag == 2) {
+    size_t total = sizeof(heapchunk_t) + chunk->size;
+    munmap(chunk, total);
+    return;
+  }
+
+  if (chunk->flag == 1) {
+    chunk->flag = 0;
+
+    while (chunk->next && chunk->next->flag == 0) {
+      heapchunk_t *next_chunk = chunk->next;
+      chunk->size += next_chunk->size + sizeof(heapchunk_t);
+      chunk->next = next_chunk->next;
+    }
+  }
+}
