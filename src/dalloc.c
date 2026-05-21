@@ -70,7 +70,24 @@ void *dalloc_malloc(size_t size) {
   arena_init();
 
   size = (size + 7) & ~7; // alignment
-  heapchunk_t *current = global_arena.head;
+
+  if (size > (ARENA_SIZE - sizeof(arena_t) - sizeof(heapchunk_t))) {
+    size_t total = size + sizeof(heapchunk_t);
+
+    void *memory = mmap(NULL, total, PROT_READ | PROT_WRITE,
+                        MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+
+    if (memory == MAP_FAILED) {
+      return NULL;
+    }
+
+    heapchunk_t *isolated_chunk = (heapchunk_t *)memory;
+    isolated_chunk->size = size;
+    isolated_chunk->flag = 2;
+    isolated_chunk->next = NULL;
+
+    return (void *)(isolated_chunk + 1);
+  }
 
   arena_t *current_arena = arena_list_head;
 
@@ -117,10 +134,10 @@ void *dalloc_malloc(size_t size) {
     next_free_chunk->flag = 0;
     next_free_chunk->next = NULL;
 
-    new_chunk->size = size;
     new_chunk->next = next_free_chunk;
   }
 
+  new_chunk->size = size;
   new_chunk->flag = 1;
   return (void *)(new_chunk + 1);
 }

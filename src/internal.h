@@ -9,7 +9,7 @@ typedef struct arena_t arena_t;
 
 struct heapchunk_t {
   size_t size;
-  uint8_t flag; // 0 for free 1 for in use
+  uint8_t flag; // 0: free, 1: in use, 2: isolated chunk
   heapchunk_t *next;
 };
 
