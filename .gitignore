@@ -1,2 +1,3 @@
 src/dalloc.o
 libdalloc.a
+tests/*
