@@ -11,6 +11,7 @@ struct heapchunk_t {
   size_t size;
   uint8_t flag; // 0: free, 1: in use, 2: isolated chunk
   heapchunk_t *next;
+  heapchunk_t *prev;
 };
 
 struct arena_t {

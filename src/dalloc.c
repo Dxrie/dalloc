@@ -28,6 +28,7 @@ static void arena_init() {
   free_chunk->size = ARENA_SIZE - sizeof(heapchunk_t);
   free_chunk->flag = 0;
   free_chunk->next = NULL;
+  free_chunk->prev = NULL;
 
   global_arena.head = free_chunk;
 }
@@ -85,6 +86,7 @@ void *dalloc_malloc(size_t size) {
     isolated_chunk->size = size;
     isolated_chunk->flag = 2;
     isolated_chunk->next = NULL;
+    isolated_chunk->prev = NULL;
 
     return (void *)(isolated_chunk + 1);
   }
@@ -105,6 +107,11 @@ void *dalloc_malloc(size_t size) {
               current_chunk->size - size - sizeof(heapchunk_t);
           next_free_chunk->flag = 0;
           next_free_chunk->next = current_chunk->next;
+          next_free_chunk->prev = current_chunk;
+
+          if (current_chunk->next) {
+            current_chunk->next->prev = next_free_chunk;
+          }
 
           current_chunk->size = size;
           current_chunk->next = next_free_chunk;
@@ -133,6 +140,7 @@ void *dalloc_malloc(size_t size) {
     next_free_chunk->size = new_chunk->size - size - sizeof(heapchunk_t);
     next_free_chunk->flag = 0;
     next_free_chunk->next = NULL;
+    next_free_chunk->prev = new_chunk;
 
     new_chunk->next = next_free_chunk;
   }
