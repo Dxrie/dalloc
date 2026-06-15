@@ -166,10 +166,30 @@ void dalloc_free(void *ptr) {
   if (chunk->flag == 1) {
     chunk->flag = 0;
 
-    while (chunk->next && chunk->next->flag == 0) {
+    // coalesce chunk forward
+    if (chunk->next && chunk->next->flag == 0) {
       heapchunk_t *next_chunk = chunk->next;
       chunk->size += next_chunk->size + sizeof(heapchunk_t);
       chunk->next = next_chunk->next;
+
+      // update link
+      if (chunk->next) {
+        chunk->next->prev = chunk;
+      }
+    }
+
+    // coalesce chunk backward
+    if (chunk->prev && chunk->prev->flag == 0) {
+      heapchunk_t *prev_chunk = chunk->prev;
+      prev_chunk->size += chunk->size + sizeof(heapchunk_t);
+      prev_chunk->next = chunk->next;
+
+      // update link
+      if (chunk->next) {
+        chunk->next->prev = prev_chunk;
+      }
+
+      chunk = prev_chunk;
     }
   }
 }
