@@ -27,12 +27,10 @@ The following functions are declared in `include/dalloc.h`:
 | Function | Description | Status |
 |---|---|---|
 | `void *dalloc_malloc(size_t size)` | Allocates `size` bytes of memory and returns a pointer to it. | **Implemented** |
-| `void dalloc_free(void *ptr)` | Frees the allocated memory pointed to by `ptr`. | *Declared / Pending Implementation* |
+| `void dalloc_free(void *ptr)` | Frees the allocated memory pointed to by `ptr`. | Implemented |
 | `void *dalloc_realloc(void *ptr, size_t size)` | Changes the size of the memory block pointed to by `ptr`. | *Declared / Pending Implementation* |
 
 ---
 
 ## Future Roadmap / Planned Features
-* [ ] Implement `dalloc_free` to mark chunks as free and unmap isolated chunks.
-* [ ] Implement chunk coalescing (combining adjacent free chunks during free operations) to reduce external fragmentation.
 * [ ] Implement `dalloc_realloc` for dynamic resizing of allocated blocks.
