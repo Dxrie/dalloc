@@ -193,3 +193,46 @@ void dalloc_free(void *ptr) {
     }
   }
 }
+
+void *dalloc_realloc(void *ptr, size_t size) {
+  // consider dalloc_realloc(NULL, size) as malloc(size)
+  if (!ptr) {
+    return dalloc_malloc(size);
+  }
+
+  // consider dalloc_realloc(chunk, 0) as free(chunk)
+  if (size == 0) {
+    dalloc_free(ptr);
+    return NULL;
+  }
+
+  heapchunk_t *chunk = (heapchunk_t *)ptr - 1;
+  size = (size + 7) & ~7; // alignment
+
+  if (chunk->size == size) {
+    return ptr;
+  }
+
+  if (size < chunk->size) {
+    // check if it's large enough for a new free chunk
+    // (metadata + 8 bytes of data minimum)
+    if (chunk->size - size >= sizeof(heapchunk_t) + 8) {
+      heapchunk_t *new_free_chunk = (heapchunk_t *)((char *)(chunk + 1) + size);
+      new_free_chunk->size = chunk->size - size - sizeof(heapchunk_t);
+      new_free_chunk->flag = 0;
+      new_free_chunk->prev = chunk;
+      new_free_chunk->next = chunk->next;
+
+      if (chunk->next) {
+        chunk->next->prev = new_free_chunk;
+      }
+
+      chunk->next = new_free_chunk;
+      chunk->size = size;
+
+      return (void *)(chunk + 1);
+    }
+
+    return ptr;
+  }
+}
