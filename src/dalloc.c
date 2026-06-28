@@ -1,6 +1,7 @@
 #include "dalloc.h"
 #include "internal.h"
 #include <stddef.h>
+#include <string.h>
 #include <sys/mman.h>
 
 #define ARENA_SIZE (1024 * 1024)
@@ -211,6 +212,23 @@ void *dalloc_realloc(void *ptr, size_t size) {
 
   if (chunk->size == size) {
     return ptr;
+  }
+
+  if (chunk->flag == 2) {
+    void *new_chunk = dalloc_malloc(size);
+
+    if (!new_chunk)
+      return NULL;
+
+    size_t copy_size = chunk->size;
+
+    if (copy_size > size)
+      copy_size = size;
+
+    memcpy(new_chunk, ptr, copy_size);
+    dalloc_free(ptr);
+
+    return new_chunk;
   }
 
   if (size < chunk->size) {
