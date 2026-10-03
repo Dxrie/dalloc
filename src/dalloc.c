@@ -253,4 +253,72 @@ void *dalloc_realloc(void *ptr, size_t size) {
 
     return ptr;
   }
+
+  // todo
+  if (!chunk->next || chunk->next->flag != 0) {
+      void *new_chunk = dalloc_malloc(size);
+
+      if (!new_chunk)
+        return NULL;
+
+      memcpy(new_chunk, ptr, chunk->size);
+      dalloc_free(ptr);
+
+      return new_chunk;
+  }
+
+  size_t total = chunk->size;
+  heapchunk_t *current = chunk->next;
+
+  while (current && current->flag == 0 && total < size) {
+      total += sizeof(heapchunk_t) + current->size;
+      current = current->next;
+  }
+
+  if (total < size) {
+      void *new_chunk = dalloc_malloc(size);
+
+      if (!new_chunk)
+          return NULL;
+
+      memcpy(new_chunk, ptr, chunk->size);
+      dalloc_free(ptr);
+      return new_chunk;
+  }
+
+  // merge chunk
+  current = chunk->next;
+
+  while (current && current->flag == 0 && chunk->size < size) {
+      heapchunk_t *next = current->next;
+
+      chunk->size += sizeof(heapchunk_t) + current->size;
+      chunk->next = next;
+
+      if (next) {
+        next->prev = chunk;
+      }
+
+      current = next;
+  }
+
+  if (chunk->size - size >= sizeof(heapchunk_t) + 8) {
+      heapchunk_t *new_free_chunk =
+          (heapchunk_t *)((char *)(chunk + 1) + size);
+
+      new_free_chunk->size =
+          chunk->size - size - sizeof(heapchunk_t);
+      new_free_chunk->flag = 0;
+      new_free_chunk->prev = chunk;
+      new_free_chunk->next = chunk->next;
+
+      if (chunk->next) {
+        chunk->next->prev = new_free_chunk;
+      }
+
+      chunk->next = new_free_chunk;
+      chunk->size = size;
+  }
+
+  return (void *)(chunk + 1);
 }
